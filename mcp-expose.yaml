@@ -1,5 +1,6 @@
-name: test-server
+name: mcp-relay-hub
 port: 8788
+host: 0.0.0.0
 
 tools:
   - name: ping
