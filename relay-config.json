@@ -1,5 +1,5 @@
 {
-  "relayServer": "wss://mcp.yourdomain.com/ws",
+  "relayServer": "ws://giangnnt-mcp-dtsdt0-8ad715-103-245-255-47.traefik.me/ws",
   "name": "MCP Relay Hub",
   "version": "1.0.0"
 }
