@@ -1,0 +1,5 @@
+{
+  "relayServer": "wss://mcp.yourdomain.com/ws",
+  "name": "MCP Relay Hub",
+  "version": "1.0.0"
+}

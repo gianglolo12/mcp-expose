@@ -1,0 +1,31 @@
+name: test-server
+port: 8788
+
+tools:
+  - name: ping
+    description: "Health check - returns pong"
+    handler:
+      type: shell
+      command: "echo pong"
+
+  - name: greet
+    description: "Greet someone by name"
+    params:
+      name:
+        type: string
+        required: true
+        description: "Name of the person to greet"
+    handler:
+      type: shell
+      command: "echo Hello, {name}!"
+
+  - name: list_files
+    description: "List files in a directory"
+    params:
+      dir:
+        type: string
+        required: true
+        description: "Directory path to list"
+    handler:
+      type: shell
+      command: "ls -la {dir}"

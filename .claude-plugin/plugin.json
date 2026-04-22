@@ -1,0 +1,16 @@
+{
+  "name": "mcp-expose",
+  "version": "0.1.0",
+  "description": "Expose any agent as a remote MCP server. Define tools in YAML, plugin auto-starts HTTP server for LAN/VPN access.",
+  "author": {
+    "name": "gianglolo13"
+  },
+  "license": "MIT",
+  "mcpServers": {
+    "mcp-expose": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/start.mjs"]
+    }
+  },
+  "skills": "./skills/"
+}

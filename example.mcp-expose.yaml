@@ -1,0 +1,84 @@
+# Example mcp-expose.yaml
+# Copy this file to your project root as "mcp-expose.yaml" and customize.
+
+name: my-team-server
+port: 8787
+
+tools:
+  # Tool 1: Simple shell command
+  - name: ping
+    description: "Health check - returns pong"
+    handler:
+      type: shell
+      command: "echo pong"
+
+  # Tool 2: Shell with parameters
+  - name: run_tests
+    description: "Run test suite for a specific module"
+    params:
+      module:
+        type: string
+        required: true
+        description: "Module name to test (e.g. auth, api, core)"
+    handler:
+      type: shell
+      command: "cd /path/to/project && npm test -- --filter {module}"
+
+  # Tool 3: Claude CLI - fix a bug
+  - name: fix_bug
+    description: "Analyze and fix a Jira bug by issue key"
+    params:
+      issueKey:
+        type: string
+        required: true
+        description: "Jira issue key, e.g. VGB-4441"
+      summary:
+        type: string
+        description: "Brief bug description"
+    handler:
+      type: claude-cli
+      prompt: |
+        Fix the Jira issue {issueKey}: {summary}
+
+        Steps:
+        1. Read the Jira issue details
+        2. Find related code
+        3. Implement the fix
+        4. Run lint and type check
+        5. Create branch: fix/{issueKey}-short-desc
+        6. Commit with message: fix(scope): description
+      model: claude-sonnet-4-6
+      cwd: /path/to/project
+      allowedTools:
+        - Bash
+        - Read
+        - Edit
+        - Write
+        - Grep
+        - Glob
+      mcpServers:
+        - atlassian-vng
+
+  # Tool 4: Custom script handler
+  - name: analyze_deps
+    description: "Analyze project dependencies for vulnerabilities"
+    handler:
+      type: script
+      path: ./handlers/analyze-deps.ts
+
+  # Tool 5: Claude CLI - code review
+  - name: review_pr
+    description: "Review a pull request"
+    params:
+      pr_number:
+        type: number
+        required: true
+        description: "PR number to review"
+    handler:
+      type: claude-cli
+      prompt: |
+        Review PR #{pr_number} on this repository.
+        Check for: bugs, security issues, code style, test coverage.
+        Be constructive and specific.
+      model: claude-sonnet-4-6
+      cwd: /path/to/project
