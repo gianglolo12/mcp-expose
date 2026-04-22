@@ -35,7 +35,8 @@ function interpolate(template: string, params: Record<string, unknown>): string 
 
 export async function handleClaudeCli(
   options: ClaudeCliOptions,
-  params: Record<string, unknown>
+  params: Record<string, unknown>,
+  waitForResult: boolean = false
 ): Promise<string> {
   const runId = uuidv4();
   const startedAt = new Date().toISOString();
@@ -55,6 +56,7 @@ export async function handleClaudeCli(
   const args = [
     "-p", prompt,
     "--output-format", "stream-json",
+    "--verbose",
     "--model", options.model,
     "--dangerously-skip-permissions",
   ];
@@ -81,6 +83,39 @@ export async function handleClaudeCli(
   let fullLog = "";
   child.stdout?.on("data", (chunk: Buffer) => { fullLog += chunk.toString(); });
   child.stderr?.on("data", (chunk: Buffer) => { fullLog += `[stderr] ${chunk.toString()}`; });
+
+  if (waitForResult) {
+    return new Promise((resolve) => {
+      child.on("close", (code) => {
+        const finishedAt = new Date().toISOString();
+        const durationMs = new Date(finishedAt).getTime() - new Date(startedAt).getTime();
+        writeLog(runId, fullLog);
+        updateHistoryEntry(runId, {
+          status: code === 0 ? "success" : "failed",
+          finishedAt,
+          durationMs,
+        });
+
+        // Extract the final result from stream-json output
+        const lines = fullLog.split("\n").filter(l => l.trim());
+        let finalResult = "";
+        for (const line of lines) {
+          try {
+            const json = JSON.parse(line);
+            if (json.type === "result" && json.result) {
+              finalResult = json.result;
+            } else if (json.type === "assistant" && json.message?.content) {
+              const textContent = json.message.content.find((c: { type: string }) => c.type === "text");
+              if (textContent?.text) {
+                finalResult = textContent.text;
+              }
+            }
+          } catch {}
+        }
+        resolve(finalResult || `Claude CLI completed with code ${code}`);
+      });
+    });
+  }
 
   child.on("close", (code) => {
     const finishedAt = new Date().toISOString();

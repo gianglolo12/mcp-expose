@@ -23,10 +23,8 @@ if %errorlevel% neq 0 (
 )
 
 set INSTALL_DIR=%USERPROFILE%\.mcp-expose
-set CLAUDE_DIR=%USERPROFILE%\.claude
-set SETTINGS_FILE=%CLAUDE_DIR%\settings.json
 
-echo [1/4] Installing to %INSTALL_DIR%...
+echo [1/3] Installing to %INSTALL_DIR%...
 
 :: Clone or update repo
 if exist "%INSTALL_DIR%" (
@@ -38,35 +36,11 @@ if exist "%INSTALL_DIR%" (
     cd /d "%INSTALL_DIR%"
 )
 
-echo [2/4] Installing dependencies...
+echo [2/3] Installing dependencies...
 call npm install
 
-echo [3/4] Building...
+echo [3/3] Building...
 call npm run build
-
-echo [4/4] Configuring Claude Code...
-
-:: Create .claude directory if needed
-if not exist "%CLAUDE_DIR%" mkdir "%CLAUDE_DIR%"
-
-:: Create or update settings.json
-if exist "%SETTINGS_FILE%" (
-    :: Backup existing settings
-    copy "%SETTINGS_FILE%" "%SETTINGS_FILE%.backup" >nul
-
-    :: Use Node to merge settings
-    node -e "const fs=require('fs');const p='%SETTINGS_FILE%'.replace(/\\/g,'/');const s=JSON.parse(fs.readFileSync(p,'utf8'));s.mcpServers=s.mcpServers||{};s.mcpServers['mcp-expose']={command:'node',args:['%INSTALL_DIR%\\dist\\index.js'.replace(/\\/g,'/')]};fs.writeFileSync(p,JSON.stringify(s,null,2));"
-) else (
-    :: Create new settings file
-    echo {> "%SETTINGS_FILE%"
-    echo   "mcpServers": {>> "%SETTINGS_FILE%"
-    echo     "mcp-expose": {>> "%SETTINGS_FILE%"
-    echo       "command": "node",>> "%SETTINGS_FILE%"
-    echo       "args": ["%INSTALL_DIR:\=/%/dist/index.js"]>> "%SETTINGS_FILE%"
-    echo     }>> "%SETTINGS_FILE%"
-    echo   }>> "%SETTINGS_FILE%"
-    echo }>> "%SETTINGS_FILE%"
-)
 
 echo.
 echo ============================================
@@ -74,9 +48,23 @@ echo   Installation Complete!
 echo ============================================
 echo.
 echo Next steps:
-echo   1. Restart Claude Code
-echo   2. Type: connect("your-name")
+echo   1. Go to your project directory
+echo   2. Create .mcp.json:
 echo.
+echo      {
+echo        "mcpServers": {
+echo          "mcp-expose": {
+echo            "command": "node",
+echo            "args": ["~/.mcp-expose/dist/index.js"]
+echo          }
+echo        }
+echo      }
+echo.
+echo   3. Create mcp-expose.yaml with your tools
+echo   4. Restart Claude Code
+echo   5. Run: connect("your-name")
+echo.
+echo Installed to: %INSTALL_DIR%
 echo Relay server: ws://giangnnt-mcp-dtsdt0-8ad715-103-245-255-47.traefik.me/ws
 echo.
 pause

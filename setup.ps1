@@ -21,10 +21,8 @@ if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
 }
 
 $INSTALL_DIR = "$env:USERPROFILE\.mcp-expose"
-$CLAUDE_DIR = "$env:USERPROFILE\.claude"
-$SETTINGS_FILE = "$CLAUDE_DIR\settings.json"
 
-Write-Host "[1/4] Installing to $INSTALL_DIR..." -ForegroundColor Yellow
+Write-Host "[1/3] Installing to $INSTALL_DIR..." -ForegroundColor Yellow
 
 # Clone or update repo
 if (Test-Path $INSTALL_DIR) {
@@ -36,49 +34,11 @@ if (Test-Path $INSTALL_DIR) {
     Set-Location $INSTALL_DIR
 }
 
-Write-Host "[2/4] Installing dependencies..." -ForegroundColor Yellow
+Write-Host "[2/3] Installing dependencies..." -ForegroundColor Yellow
 npm install
 
-Write-Host "[3/4] Building..." -ForegroundColor Yellow
+Write-Host "[3/3] Building..." -ForegroundColor Yellow
 npm run build
-
-Write-Host "[4/4] Configuring Claude Code..." -ForegroundColor Yellow
-
-# Create .claude directory if needed
-if (-not (Test-Path $CLAUDE_DIR)) {
-    New-Item -ItemType Directory -Path $CLAUDE_DIR | Out-Null
-}
-
-# Prepare the args path with forward slashes
-$argsPath = "$INSTALL_DIR\dist\index.js" -replace '\\', '/'
-
-# Create or update settings.json
-if (Test-Path $SETTINGS_FILE) {
-    # Backup existing settings
-    Copy-Item $SETTINGS_FILE "$SETTINGS_FILE.backup"
-
-    # Read and update settings
-    $settings = Get-Content $SETTINGS_FILE -Raw | ConvertFrom-Json
-    if (-not $settings.mcpServers) {
-        $settings | Add-Member -NotePropertyName "mcpServers" -NotePropertyValue @{}
-    }
-    $settings.mcpServers | Add-Member -NotePropertyName "mcp-expose" -NotePropertyValue @{
-        command = "node"
-        args = @($argsPath)
-    } -Force
-    $settings | ConvertTo-Json -Depth 10 | Set-Content $SETTINGS_FILE
-} else {
-    # Create new settings file
-    $settings = @{
-        mcpServers = @{
-            "mcp-expose" = @{
-                command = "node"
-                args = @($argsPath)
-            }
-        }
-    }
-    $settings | ConvertTo-Json -Depth 10 | Set-Content $SETTINGS_FILE
-}
 
 Write-Host ""
 Write-Host "============================================" -ForegroundColor Green
@@ -86,9 +46,23 @@ Write-Host "  Installation Complete!" -ForegroundColor Green
 Write-Host "============================================" -ForegroundColor Green
 Write-Host ""
 Write-Host "Next steps:" -ForegroundColor White
-Write-Host '  1. Restart Claude Code' -ForegroundColor White
-Write-Host '  2. Type: connect("your-name")' -ForegroundColor White
+Write-Host "  1. Go to your project directory" -ForegroundColor White
+Write-Host "  2. Create .mcp.json:" -ForegroundColor White
 Write-Host ""
+Write-Host '     {' -ForegroundColor Gray
+Write-Host '       "mcpServers": {' -ForegroundColor Gray
+Write-Host '         "mcp-expose": {' -ForegroundColor Gray
+Write-Host '           "command": "node",' -ForegroundColor Gray
+Write-Host '           "args": ["~/.mcp-expose/dist/index.js"]' -ForegroundColor Gray
+Write-Host '         }' -ForegroundColor Gray
+Write-Host '       }' -ForegroundColor Gray
+Write-Host '     }' -ForegroundColor Gray
+Write-Host ""
+Write-Host "  3. Create mcp-expose.yaml with your tools" -ForegroundColor White
+Write-Host "  4. Restart Claude Code" -ForegroundColor White
+Write-Host '  5. Run: connect("your-name")' -ForegroundColor White
+Write-Host ""
+Write-Host "Installed to: $INSTALL_DIR" -ForegroundColor Cyan
 Write-Host "Relay server: ws://giangnnt-mcp-dtsdt0-8ad715-103-245-255-47.traefik.me/ws" -ForegroundColor Cyan
 Write-Host ""
 Read-Host "Press Enter to exit"

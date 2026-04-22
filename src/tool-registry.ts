@@ -53,7 +53,8 @@ export async function dispatch(
           allowedTools: handler.allowedTools,
           mcpServers: handler.mcpServers,
         },
-        params
+        params,
+        true
       );
 
     case "shell":

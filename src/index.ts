@@ -414,7 +414,8 @@ localServer.tool(
           model: "sonnet",
           allowedTools: ["Read", "Glob", "Grep", "Bash"],
         },
-        {}
+        {},
+        true // waitForResult - đợi Claude CLI trả về kết quả
       );
 
       return result;
