@@ -1,0 +1,30 @@
+# Copy file này vào thư mục project và đổi tên thành: mcp-expose.yaml
+# Sửa "ten-cua-ban" thành tên của bạn
+
+name: ten-cua-ban
+port: 8789
+
+tools:
+  - name: git_status
+    description: "Xem git status"
+    handler:
+      type: shell
+      command: "git status"
+
+  - name: git_log
+    description: "Xem 10 commits gần nhất"
+    handler:
+      type: shell
+      command: "git log --oneline -10"
+
+  - name: build
+    description: "Build project"
+    handler:
+      type: shell
+      command: "npm run build"
+
+  - name: test
+    description: "Chạy tests"
+    handler:
+      type: shell
+      command: "npm test"
